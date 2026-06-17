@@ -1,0 +1,72 @@
+{
+  "_meta": {
+    "verified_on": "2026-06-17",
+    "note_ko": "절차는 참고용 간단 안내입니다. '24시간·14일' 등은 법정 기한이 아니라 교육부 매뉴얼 권장치입니다(법은 '지체 없이'). 실제 절차는 학교·교육지원청 안내와 1395를 우선하세요."
+  },
+  "records": [
+    {
+      "id": "TRACK-CRIMINAL", "name_ko": "교권침해(범죄형) 대응", "applies_when": ["crime", "critical", "high"],
+      "steps": [
+        {"order": 1, "title_ko": "즉시 중단·분리·안전 확보", "actor": "학교/교원", "deadline_ko": "즉시", "detail_ko": "침해행위 중단 요청, 현장 이탈, 가해자-피해교원 즉시 분리, 위급 시 112.", "legal_refs": ["LAW-TSA-20"]},
+        {"order": 2, "title_ko": "관리자 보고·증거 확보", "actor": "교원", "deadline_ko": "즉시", "detail_ko": "관리자(민원대응팀)에 보고. 녹음·목격자·CCTV·메시지 등 증거 확보. 혼자 대응하지 않기.", "legal_refs": []},
+        {"order": 3, "title_ko": "교육지원청 신고", "actor": "학교장", "deadline_ko": "지체 없이(매뉴얼상 통상 24시간 내)", "authority": "매뉴얼(권고)", "detail_ko": "학교장이 관할청(교육지원청)에 신고. 법은 '지체 없이'(제20조③), '24시간'은 매뉴얼 권장치.", "legal_refs": ["LAW-TSA-20", "GUIDE-REPORT-24H"]},
+        {"order": 4, "title_ko": "지역교권보호위원회 사안조사·소집", "actor": "교육지원청", "deadline_ko": "-", "detail_ko": "사안 조사 후 지역교권보호위원회 소집, 당사자 진술 기회 부여.", "legal_refs": ["LAW-TSA-18-2", "LAW-TSA-25"]},
+        {"order": 5, "title_ko": "심의·조치 결정·통지", "actor": "위원회/교육장", "deadline_ko": "매뉴얼상 통상 14일 내(법정 아님)", "authority": "매뉴얼(권고)", "detail_ko": "가해자 조치 결정, 피해교원 보호조치. 교육장이 시행.", "legal_refs": ["LAW-TSA-25", "GUIDE-REPORT-24H"]},
+        {"order": 6, "title_ko": "불복 시 행정심판", "actor": "당사자", "deadline_ko": "-", "detail_ko": "조치에 이의가 있으면 행정심판 청구 가능.", "legal_refs": ["LAW-TSA-25"]}
+      ],
+      "evidence_refs": ["EVD-RECORDING", "EVD-WITNESS", "EVD-CCTV", "EVD-MESSAGE", "EVD-INJURY"],
+      "related_resources": ["RES-1395", "RES-INSURANCE", "RES-PROTECTION-CENTER"]
+    },
+    {
+      "id": "TRACK-MALICIOUS-COMPLAINT", "name_ko": "악성·반복 민원 대응", "applies_when": ["interference", "high", "medium"],
+      "steps": [
+        {"order": 1, "title_ko": "기록 남기기(날짜·횟수·내용)", "actor": "교원", "deadline_ko": "즉시", "detail_ko": "동일 민원의 일시·횟수·내용을 객관적으로 기록(반복성 입증의 핵심).", "legal_refs": []},
+        {"order": 2, "title_ko": "동일 답변 안내 후 종료", "actor": "교원", "deadline_ko": "-", "detail_ko": "합리적 답변을 이미 했다면 '동일 답변 외 도움 어려움' 안내 후 통화 종료 가능. 근무시간 외·개인폰 연락은 응대 거부 가능.", "legal_refs": []},
+        {"order": 3, "title_ko": "민원대응팀(기관)으로 이관", "actor": "학교/교원", "deadline_ko": "-", "detail_ko": "개인 대응에서 학교 민원대응팀 → 교육지원청 학교민원대응지원팀(구 통합민원팀)으로 전환. 교사 개인이 떠안지 않음.", "legal_refs": []},
+        {"order": 4, "title_ko": "교권보호위 회부(해당 시)", "actor": "학교/교육지원청", "deadline_ko": "-", "detail_ko": "'목적 부당 민원 반복'은 교육활동 침해(법 제19조)에 해당할 수 있어 지역교권보호위 심의 대상.", "legal_refs": ["LAW-TSA-19", "LAW-TSA-26"]}
+      ],
+      "evidence_refs": ["EVD-LOG", "EVD-RECORDING", "EVD-MESSAGE"],
+      "related_resources": ["RES-COMPLAINT-TEAM", "RES-OFFICE-TEAM", "RES-1395"]
+    },
+    {
+      "id": "TRACK-INTERFERENCE", "name_ko": "부당 간섭·제한 대응", "applies_when": ["interference"],
+      "steps": [
+        {"order": 1, "title_ko": "사실 기록·경계 설정", "actor": "교원", "deadline_ko": "즉시", "detail_ko": "간섭·강요 내용을 기록. 권한·규정 밖 요구는 정중히 거절.", "legal_refs": ["LAW-TSA-19"]},
+        {"order": 2, "title_ko": "관리자·민원대응팀 공유", "actor": "교원", "deadline_ko": "-", "detail_ko": "혼자 판단하지 말고 관리자와 공유, 필요 시 기관 대응으로 전환.", "legal_refs": []},
+        {"order": 3, "title_ko": "지속 시 교권보호위 회부", "actor": "학교/교육지원청", "deadline_ko": "-", "detail_ko": "반복·지속되면 지역교권보호위 심의 요청.", "legal_refs": ["LAW-TSA-26"]}
+      ],
+      "evidence_refs": ["EVD-LOG", "EVD-MESSAGE", "EVD-WITNESS"],
+      "related_resources": ["RES-COMPLAINT-TEAM", "RES-1395"]
+    },
+    {
+      "id": "TRACK-CHILD-ABUSE-REPORT", "name_ko": "(무고성) 아동학대 신고 대응", "applies_when": ["false-report"],
+      "steps": [
+        {"order": 1, "title_ko": "침착 대응·즉시 관리자 보고", "actor": "교원", "deadline_ko": "즉시", "detail_ko": "협박에 굴복하거나 사실과 다른 인정·사과를 하지 않기. 즉시 관리자·교권보호 담당에 보고, 단독 대응 중단.", "legal_refs": []},
+        {"order": 2, "title_ko": "정당 생활지도 입증자료 확보", "actor": "교원", "deadline_ko": "즉시", "detail_ko": "생활지도가 법령·학칙·고시(생활지도 고시)에 부합했음을 시간순으로 정리. CCTV·기록부·상담일지·목격 진술 확보.", "legal_refs": ["LAW-EE-20-2", "GOSI-SAENGHWAL", "LAW-CACPA-2-3"]},
+        {"order": 3, "title_ko": "교육청 의견 제출 활용", "actor": "교육청", "deadline_ko": "안 날부터 7일 내(+1회 연장)", "authority": "시행령", "detail_ko": "교육감은 아동학대 조사·수사 인지 후 7일 내 수사기관에 의견서 제출(시행령 제11조). 정당 생활지도 보호의 핵심 절차.", "legal_refs": ["DECREE-TSA-11", "LAW-CACPA-2-3"]},
+        {"order": 4, "title_ko": "1395·법률지원 연계", "actor": "교원", "deadline_ko": "-", "detail_ko": "1395로 법률지원·심리상담·교원배상책임보험 안내. 교원단체 법률지원·변호사 상담.", "legal_refs": []}
+      ],
+      "evidence_refs": ["EVD-LOG", "EVD-CCTV", "EVD-RECORDING", "EVD-MESSAGE", "EVD-WITNESS"],
+      "related_resources": ["RES-1395", "RES-INSURANCE", "RES-UNION-LEGAL", "RES-PROTECTION-CENTER"]
+    }
+  ],
+  "evidence_guide": [
+    {"id": "EVD-RECORDING", "name_ko": "통화·대화 녹음", "how_ko": "본인이 포함된 대화·통화는 녹음 가능(통신비밀보호법상 합법). 폭언 시 '녹음 중' 고지 후 녹음.", "caution_ko": "본인이 참여하지 않은 제3자 간 대화 무단녹음은 위법."},
+    {"id": "EVD-WITNESS", "name_ko": "목격자 진술", "how_ko": "동료교사·학생 등 목격자의 진술·연락처 확보.", "caution_ko": "학생 진술은 보호자 동의 등 절차 유의."},
+    {"id": "EVD-CCTV", "name_ko": "CCTV 영상", "how_ko": "행정실에 서면으로 보존 요청(자동 삭제주기 전).", "caution_ko": "개인정보보호법상 열람 절차 필요, 임의 반출 금지."},
+    {"id": "EVD-MESSAGE", "name_ko": "문자·SNS·민원 캡처", "how_ko": "문자·메신저·게시글 원본을 날짜 포함해 캡처·보관.", "caution_ko": "편집 금지, 원본 보존."},
+    {"id": "EVD-INJURY", "name_ko": "상해 진단서·사진", "how_ko": "부상 시 병원 진단서, 상해 부위 사진(일시 기록).", "caution_ko": "가능한 즉시 확보."},
+    {"id": "EVD-LOG", "name_ko": "민원·면담 기록대장", "how_ko": "일시·경로·내용·대응을 육하원칙으로 기록(반복성·정당성 입증).", "caution_ko": "객관적 사실 위주, 감정 표현 분리."}
+  ],
+  "victim_protection": {
+    "id": "PROC-VICTIM-PROTECTION", "name_ko": "피해교원 보호조치",
+    "items_ko": [
+      "즉시 가해자와 분리(제20조②)",
+      "심리상담·조언, 치료·요양 등 보호조치(제20조①)",
+      "특별휴가(통상 5일로 안내되나 정확 일수는 미확인 — 소속 교육청 예규 확인)",
+      "교원배상책임보험(분쟁·소송·치료 지원 — 한도는 시도·약관별 상이)",
+      "정당한 민원 처리에 대한 불이익 조치 금지"
+    ],
+    "legal_refs": ["LAW-TSA-20", "UNVERIFIED-LEAVE-5D", "RES-INSURANCE"]
+  }
+}

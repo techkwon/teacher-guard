@@ -1,0 +1,56 @@
+{
+  "_meta": {
+    "verified_on": "2026-06-17",
+    "note_ko": "연락처·보장 내용은 변동·시도별 상이 가능. 정확한 내용은 1395 또는 소속 시도교육청에서 확인하세요."
+  },
+  "records": [
+    {
+      "id": "RES-1395", "type": "hotline", "name_ko": "교권침해 직통번호 1395",
+      "contact": "1395 (전국 어디서나 유·무선)",
+      "scope_ko": ["교육활동 침해 신고", "심리상담", "법률지원 안내", "교원보호공제(배상책임) 안내"],
+      "hours_ko": "전화: 평일 09:00~18:00 / 카카오톡 상담: 상시 운영",
+      "when_ko": "교권침해·악성민원 발생 시 가장 먼저 연락하는 1차 통합 창구.",
+      "source": {"label": "정책브리핑(교육부)", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148926368", "verified_on": "2026-06-17"}
+    },
+    {
+      "id": "RES-INSURANCE", "type": "insurance", "name_ko": "교원배상책임보험(교원보호공제)",
+      "contact": "소속 학교/시도교육청, 안내는 1395",
+      "scope_ko": ["교육활동 중 손해배상책임", "소송·변호사 비용", "심리치료비 지원"],
+      "coverage_note_ko": "⚠️ 보장 한도·금액(예: 배상책임·재산·심리치료)은 가입 시도교육청·연도·보험사 약관에 따라 다릅니다. 특정 금액을 확정으로 보지 마시고, 정확한 보장은 소속 시도교육청·1395에 확인하세요. (교권보호위 심의·의결 사안 등 약관 조건 적용)",
+      "when_ko": "분쟁·소송·심리치료가 필요할 때.",
+      "source": {"label": "정책브리핑 교원배상책임보험 보도자료", "url": "https://www.korea.kr/briefing/pressReleaseView.do?newsId=156592277", "verified_on": "2026-06-17"}
+    },
+    {
+      "id": "RES-COMPLAINT-TEAM", "type": "team", "name_ko": "학교 민원대응팀",
+      "contact": "소속 학교(대표전화)",
+      "scope_ko": ["학교 대표 민원 접수·분류·답변", "특이·악성 민원 기관 대응"],
+      "composition_ko": "학교장·교감·행정실장 등(5명 이내). 교사 개인이 아닌 기관이 대응.",
+      "when_ko": "반복·악성·분쟁 민원을 개인 대응에서 기관 대응으로 넘길 때.",
+      "source": {"label": "교육부 「학교 민원 응대 안내자료」(2024.3)", "url": "https://www.goe.go.kr/resource/old/BBSMSTR_000000000107/BBS_202410080511161001.pdf", "verified_on": "2026-06-17"}
+    },
+    {
+      "id": "RES-OFFICE-TEAM", "type": "team", "name_ko": "교육지원청 학교민원대응지원팀(구 통합민원팀)",
+      "contact": "관할 교육지원청",
+      "scope_ko": ["학교에서 이관된 민원 처리", "학교 민원대응 지원"],
+      "when_ko": "학교 단위에서 해결이 어려운 민원.",
+      "note_ko": "2024년 '통합민원팀' → 2026년 '학교민원대응지원팀'으로 명칭 변경(병기).",
+      "source": {"label": "충북교육청 「2026 학교민원처리 매뉴얼」", "url": "https://www.cbe.go.kr", "verified_on": "2026-06-17"}
+    },
+    {
+      "id": "RES-PROTECTION-CENTER", "type": "center", "name_ko": "교육활동보호센터/교원치유지원센터",
+      "contact": "소속 시도교육청 / 1395 / KEDI 포털",
+      "scope_ko": ["심리상담·치유 프로그램", "교사 마음건강", "법률지원 연계"],
+      "when_ko": "침해로 지친 교원의 심리상담·회복이 필요할 때.",
+      "note_ko": "시도별 센터 직통번호는 변동 가능 → 1395 또는 소속 교육청 홈페이지 확인.",
+      "source": {"label": "한국교육개발원(KEDI) 교육활동보호센터", "url": "https://forteacher.kedi.re.kr/", "verified_on": "2026-06-17"}
+    },
+    {
+      "id": "RES-UNION-LEGAL", "type": "union", "name_ko": "교원단체 법률지원",
+      "contact": "한국교총 / 교사노조연맹 등 가입 단체",
+      "scope_ko": ["교권상담", "소송비·변호사 지원", "아동학대 신고 피해 지원", "교권보호위 대리 출석(단체별)"],
+      "when_ko": "법적 대응·소송·교권보호위 대응이 필요할 때.",
+      "note_ko": "지원 내용은 가입 단체·조합원 여부에 따라 다름. 소속 단체 홈페이지 확인.",
+      "source": {"label": "한국교총 / 교사노조연맹", "url": "https://www.kfta.or.kr/", "verified_on": "2026-06-17"}
+    }
+  ]
+}
