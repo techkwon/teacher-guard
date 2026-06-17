@@ -129,8 +129,9 @@ def _finalize(body: str, ref_ids=()) -> str:
 # --------------------------------------------------------------------------- #
 @mcp.tool(annotations=_ann("상황 분류"))
 def classify_complaint(situation_text: str, repeated: bool = False, channel: str = "") -> str:
-    """Classify a complaint/situation into likely infringement type(s), urgency, and a
-    recommended response track — KB-grounded, reference only (no determination).
+    """[교권 지킴이] Classify a complaint/situation into likely infringement type(s),
+    urgency, and a recommended response track — KB-grounded, reference only (no determination).
+    교권 지킴이(Teacher-Guard)의 상황 분류 도구.
 
     Args:
         situation_text: 발생한 민원/상황 서술 (예: "학부모가 밤 11시에 전화해 욕설").
@@ -186,8 +187,8 @@ def classify_complaint(situation_text: str, repeated: bool = False, channel: str
 
 @mcp.tool(annotations=_ann("법적 근거"))
 def get_legal_basis(query: str = "", type_id: str = "", law_id: str = "") -> str:
-    """Look up relevant statutes/guidelines and their key points — KB-grounded, reference only.
-    법(statute)·시행령·고시·매뉴얼(권고)을 구분해 안내합니다.
+    """[교권 지킴이] Look up relevant statutes/guidelines and their key points — KB-grounded, reference only.
+    교권 지킴이(Teacher-Guard)의 법적 근거 안내. 법(statute)·시행령·고시·매뉴얼(권고)을 구분합니다.
 
     Args:
         query: 키워드/상황 (예: "과태료", "정당한 생활지도", "명예훼손", "아동학대").
@@ -239,8 +240,8 @@ def get_legal_basis(query: str = "", type_id: str = "", law_id: str = "") -> str
 
 @mcp.tool(annotations=_ann("대응 절차"))
 def get_response_procedure(track_id: str = "", situation_text: str = "", include_evidence: bool = True) -> str:
-    """Return a step-by-step response checklist (+evidence guide) — KB-grounded, reference only.
-    '24시간/14일' 등은 법정 기한이 아닌 매뉴얼 권고치로 표기됩니다.
+    """[교권 지킴이] Return a step-by-step response checklist (+evidence guide) — KB-grounded, reference only.
+    교권 지킴이(Teacher-Guard)의 대응 절차. '24시간/14일'은 법정 기한이 아닌 매뉴얼 권고치로 표기됩니다.
 
     Args:
         track_id: 절차 ID(예: TRACK-CRIMINAL, TRACK-MALICIOUS-COMPLAINT, TRACK-CHILD-ABUSE-REPORT).
@@ -288,7 +289,8 @@ def get_response_procedure(track_id: str = "", situation_text: str = "", include
 
 @mcp.tool(annotations=_ann("응대 초안"))
 def draft_response(situation_text: str, tone: str = "polite", channel: str = "", template_id: str = "") -> str:
-    """Generate a response-message draft in a chosen tone — KB template based, reference only.
+    """[교권 지킴이] Generate a response-message draft in a chosen tone — KB template based, reference only.
+    교권 지킴이(Teacher-Guard)의 응대 문구 초안 생성.
 
     Args:
         situation_text: 응대가 필요한 상황 서술.
@@ -322,7 +324,8 @@ def draft_response(situation_text: str, tone: str = "polite", channel: str = "",
 
 @mcp.tool(annotations=_ann("지원 기관"))
 def get_support_resources(need: str = "all", situation_text: str = "") -> str:
-    """Return relevant support orgs/contacts (1395, insurance, complaint team, etc.) — reference only.
+    """[교권 지킴이] Return relevant support orgs/contacts (1395, insurance, complaint team, etc.) — reference only.
+    교권 지킴이(Teacher-Guard)의 지원기관 안내.
 
     Args:
         need: "all"/"hotline"/"legal"/"counseling"/"insurance"/"complaint_team".
@@ -366,7 +369,8 @@ def create_complaint_record(
     type_id: str = "",
     reporter: str = "",
 ) -> str:
-    """Generate a standardized complaint/infringement record-log form (text only) — reference only.
+    """[교권 지킴이] Generate a standardized complaint/infringement record-log form (text only) — reference only.
+    교권 지킴이(Teacher-Guard)의 민원 기록 대장 생성.
 
     Args:
         incident_date: 발생 일시. summary: 사건 요약. channel: 발생 경로.
