@@ -45,6 +45,10 @@ VERIFY_KO = (
 )
 DISCLAIMER_KO = "⚖️ 본 정보는 참고용 간단 안내이며 법률자문이 아닙니다. (검증일 2026-06-17)"
 
+# 신변 위협 의심 표현 — 감지 시 긴급도 critical + 112 안내 강제
+DANGER_KW = ["칼", "흉기", "죽이", "죽여", "찾아오겠", "찾아가겠", "해치", "자해", "자살", "불 지르", "폭발"]
+DANGER_BANNER = "🚨 **신변 위협이 의심됩니다 — 즉시 112 신고, 교권 상담은 1395.**\n"
+
 mcp = FastMCP(
     "teacher-guard",
     instructions=(
@@ -133,6 +137,7 @@ def classify_complaint(situation_text: str, repeated: bool = False, channel: str
         repeated: 반복성 여부(부당간섭 가중).
         channel: 발생 경로(phone/message/inperson/sns 등, 선택).
     """
+    danger = any(_norm(k) in _norm(situation_text) for k in DANGER_KW)
     cands = _match(situation_text, INFR["records"], topk=3)
     if repeated:
         rep = INFR_BY_ID.get("INF-INTERFERE-REPEAT")
@@ -141,7 +146,8 @@ def classify_complaint(situation_text: str, repeated: bool = False, channel: str
     if not cands:
         body = (
             "## 🔍 상황 분류 (참고용)\n\n"
-            "명확히 분류되지 않았습니다. 상황을 조금 더 구체적으로 알려주세요.\n"
+            + (DANGER_BANNER + "\n" if danger else "")
+            + "명확히 분류되지 않았습니다. 상황을 조금 더 구체적으로 알려주세요.\n"
             "급박한 신변 위협이면 **즉시 112**, 교권 상담은 **1395**."
         )
         return _finalize(body, ["RES-1395"])
@@ -149,10 +155,13 @@ def classify_complaint(situation_text: str, repeated: bool = False, channel: str
     order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
     cands.sort(key=lambda r: order.get(r.get("default_severity", "medium"), 2))
     top = cands[0]
-    severity = top.get("default_severity", "medium")
+    severity = "critical" if danger else top.get("default_severity", "medium")
     track = top.get("default_track")
 
-    lines = ["## 🔍 상황 분류 (참고용 — 최종 판단은 교권보호위)\n", "**가능 침해유형(참고)**"]
+    lines = ["## 🔍 상황 분류 (참고용 — 최종 판단은 교권보호위)\n"]
+    if danger:
+        lines.append(DANGER_BANNER)
+    lines.append("**가능 침해유형(참고)**")
     for r in cands:
         cat = "범죄형" if r["category"] == "crime" else "부당간섭형"
         crim = " · 형사 가능" if r.get("is_criminal") else ""
