@@ -43,7 +43,27 @@ VERIFY_KO = (
     "✅ 최신본은 law.go.kr에서, 구체적 판단은 교권침해 직통전화 **1395**·"
     "지역교권보호위원회·변호사에 확인하세요."
 )
-DISCLAIMER_KO = "⚖️ 본 정보는 참고용 간단 안내이며 법률자문이 아닙니다. (검증일 2026-06-17)"
+
+
+def _verified_on() -> str:
+    """검증일 단일 소스 — KB _meta.verified_on에서 읽고, 없으면 기본값."""
+    for kb in (LEGAL, INFR, PROC, RES, TPL):
+        v = (kb.get("_meta") or {}).get("verified_on")
+        if v:
+            return v
+    return "2026-06-17"
+
+
+DISCLAIMER_KO = f"⚖️ 본 정보는 참고용 간단 안내이며 법률자문이 아닙니다. (검증일 {_verified_on()})"
+
+# 동점 매칭 시 의미 기반 정렬용 — 침해 심각도 / 법령 권위 / 응대 템플릿 우선순위
+SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+AUTH_ORDER = {"법률": 0, "시행령": 1, "행정규칙(고시)": 2, "매뉴얼(권고)": 3, "미확인": 4}
+# 응대 초안: 직접 침해행위 > 정황 > 시간·빈도 순으로 우선(동점 tie-break)
+_TPL_PRIORITY = {tid: i for i, tid in enumerate([
+    "TPL-ABUSE", "TPL-FALSE-REPORT-THREAT", "TPL-EXCESSIVE",
+    "TPL-MEETING", "TPL-AFTERHOURS", "TPL-REPEAT", "TPL-LEGITIMATE",
+])}
 
 # 신변 위협 의심 표현 — 감지 시 긴급도 critical + 112 안내 강제
 DANGER_KW = ["칼", "흉기", "죽이", "죽여", "찾아오겠", "찾아가겠", "해치", "자해", "자살", "불 지르", "폭발"]
@@ -80,15 +100,30 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", "", (s or "")).lower()
 
 
-def _match(text: str, records: list, topk: int = 3) -> list:
+def _match(text: str, records: list, topk: int = 3, tiebreak: dict | None = None) -> list:
     t = _norm(text)
     scored = []
     for r in records:
         score = sum(1 for kw in r.get("keywords", []) if _norm(kw) and _norm(kw) in t)
         if score:
             scored.append((score, r))
-    scored.sort(key=lambda x: -x[0])
+    if tiebreak:
+        scored.sort(key=lambda x: (-x[0], tiebreak.get(x[1].get("id"), 999)))
+    else:
+        scored.sort(key=lambda x: -x[0])
     return [r for _, r in scored[:topk]]
+
+
+def _rank_infr(cands: list) -> list:
+    """침해유형 후보를 심각도→범죄성 순으로 정렬(가장 위험한 유형이 맨 앞).
+
+    동일 score여도 폭행(critical/형사)이 강요(medium)보다 앞서도록 보장 —
+    범죄형이 부당간섭형으로 강등되어 '즉시 112'·형사 절차가 누락되는 것을 방지.
+    """
+    return sorted(cands, key=lambda r: (
+        SEVERITY_ORDER.get(r.get("default_severity", "medium"), 2),
+        0 if r.get("is_criminal") else 1,
+    ))
 
 
 def _sources_block(ref_ids) -> str:
@@ -144,21 +179,31 @@ def classify_complaint(situation_text: str, repeated: bool = False, channel: str
     if repeated:
         rep = INFR_BY_ID.get("INF-INTERFERE-REPEAT")
         if rep and rep not in cands:
-            cands.insert(0, rep)
+            cands.append(rep)  # 반복성은 정황으로만 추가 — track은 아래 심각도 정렬이 결정
     if not cands:
+        # danger 감지 시엔 미분류라도 범죄형(critical)으로 안전하게 유도
+        if danger:
+            body = (
+                "## 🔍 상황 분류 (참고용 — 최종 판단은 교권보호위)\n\n"
+                + DANGER_BANNER
+                + "\n**긴급도:** CRITICAL\n"
+                "구체 유형은 분류되지 않았으나 신변 위협이 의심됩니다. **즉시 112**, 교권 상담 **1395**.\n"
+                "**권장 대응:** 교권침해(범죄형) 대응 → `get_response_procedure(track_id=\"TRACK-CRIMINAL\")`"
+            )
+            return _finalize(body, ["RES-1395"])
         body = (
             "## 🔍 상황 분류 (참고용)\n\n"
-            + (DANGER_BANNER + "\n" if danger else "")
-            + "명확히 분류되지 않았습니다. 상황을 조금 더 구체적으로 알려주세요.\n"
+            "명확히 분류되지 않았습니다. 상황을 조금 더 구체적으로 알려주세요.\n"
             "급박한 신변 위협이면 **즉시 112**, 교권 상담은 **1395**."
         )
         return _finalize(body, ["RES-1395"])
 
-    order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-    cands.sort(key=lambda r: order.get(r.get("default_severity", "medium"), 2))
+    cands = _rank_infr(cands)
     top = cands[0]
     severity = "critical" if danger else top.get("default_severity", "medium")
     track = top.get("default_track")
+    if danger and track != "TRACK-CRIMINAL":
+        track = "TRACK-CRIMINAL"  # 신변 위협이면 범죄형 절차로 유도
 
     lines = ["## 🔍 상황 분류 (참고용 — 최종 판단은 교권보호위)\n"]
     if danger:
@@ -167,7 +212,7 @@ def classify_complaint(situation_text: str, repeated: bool = False, channel: str
     for r in cands:
         cat = "범죄형" if r["category"] == "crime" else "부당간섭형"
         crim = " · 형사 가능" if r.get("is_criminal") else ""
-        lines.append(f"- {r['name_ko']} ({cat}){crim}")
+        lines.append(f"- {r['name_ko']} ({cat}){crim} · `{r['id']}`")
     soji = "⚠️ 있어 보임" if severity in ("critical", "high") else "ℹ️ 검토 필요"
     lines.append(f"\n**교권침해 소지(참고):** {soji}")
     lines.append(f"**긴급도:** {severity.upper()}")
@@ -201,18 +246,29 @@ def get_legal_basis(query: str = "", type_id: str = "", law_id: str = "") -> str
     elif type_id and type_id in INFR_BY_ID:
         recs = [LEGAL_BY_ID[x] for x in INFR_BY_ID[type_id].get("legal_refs", []) if x in LEGAL_BY_ID]
     elif query:
-        t = _norm(query)
-        recs = [
-            r for r in LEGAL["records"]
-            if t in _norm(
-                (r.get("article", "") + r.get("title_ko", "") + r.get("summary_ko", "")
-                 + r.get("short_ko", "") + (r.get("penalty_ko") or ""))
+        # 토큰 단위 AND 매칭 — "교원지위법 제20조"처럼 필드 경계를 넘는 다중어 query 지원.
+        # (기존 substring 전체매칭은 어순·필드순 때문에 법령명+조문 검색이 구조적으로 실패했음)
+        toks = [_norm(tok) for tok in re.split(r"[\s·,]+", query) if _norm(tok)]
+        scored = []
+        for r in LEGAL["records"]:
+            blob = _norm(
+                r.get("article", "") + r.get("title_ko", "") + r.get("summary_ko", "")
+                + r.get("short_ko", "") + (r.get("penalty_ko") or "")
+                + " ".join(r.get("keywords") or [])
             )
-        ]
+            n = sum(1 for tk in toks if tk in blob)
+            if n:
+                scored.append((n, r))
+        # 매칭 토큰 수 ↓, 동점 시 권위(법률>시행령>고시>매뉴얼) 우선 → 법률 본문이 매뉴얼보다 앞
+        scored.sort(key=lambda x: (-x[0], AUTH_ORDER.get(x[1].get("authority_level", ""), 9)))
+        recs = [r for _, r in scored]
         if not recs:
-            m = _match(query, INFR["records"], topk=1)
-            if m:
-                recs = [LEGAL_BY_ID[x] for x in m[0].get("legal_refs", []) if x in LEGAL_BY_ID]
+            seen = set()
+            for mm in _match(query, INFR["records"], topk=2):
+                for x in mm.get("legal_refs", []):
+                    if x in LEGAL_BY_ID and x not in seen:
+                        seen.add(x)
+                        recs.append(LEGAL_BY_ID[x])
     if not recs:
         return _finalize(
             "## ⚖️ 관련 근거\n\n해당 키워드의 근거를 찾지 못했습니다. "
@@ -249,20 +305,25 @@ def get_response_procedure(track_id: str = "", situation_text: str = "", include
         situation_text: 상황 서술(track_id 없을 때 내부 분류).
         include_evidence: 증거수집 가이드 포함 여부.
     """
+    danger = bool(situation_text) and any(_norm(k) in _norm(situation_text) for k in DANGER_KW)
     track = None
     if track_id and track_id in PROC_BY_ID:
         track = PROC_BY_ID[track_id]
     elif situation_text:
-        m = _match(situation_text, INFR["records"], topk=1)
+        m = _rank_infr(_match(situation_text, INFR["records"], topk=3))  # 심각도 우선
         if m:
             track = PROC_BY_ID.get(m[0].get("default_track"))
+    if danger and "TRACK-CRIMINAL" in PROC_BY_ID and (track is None or track.get("id") != "TRACK-CRIMINAL"):
+        track = PROC_BY_ID["TRACK-CRIMINAL"]  # 신변 위협 의심 — 범죄형 절차로 유도
     if not track:
         lines = ["## 📋 대응 절차\n\n상황을 알려주시거나 트랙을 지정하세요:"]
         for r in PROC["records"]:
             lines.append(f"- `{r['id']}` — {r['name_ko']}")
         return _finalize("\n".join(lines), ["RES-1395"])
 
-    lines, refs = [f"## 📋 {track['name_ko']} (참고용 체크리스트)\n"], []
+    lines = [DANGER_BANNER] if danger else []
+    lines.append(f"## 📋 {track['name_ko']} (참고용 체크리스트)\n")
+    refs = []
     for s in track["steps"]:
         auth = s.get("authority", "")
         dl = s.get("deadline_ko", "")
@@ -298,11 +359,12 @@ def draft_response(situation_text: str, tone: str = "polite", channel: str = "",
         tone: 톤 — "empathetic"(공감)/"polite"(정중)/"firm"(단호).
         channel: 응대 채널(선택). template_id: 템플릿 ID 직접 지정(선택).
     """
+    bad_template_id = bool(template_id) and template_id not in TPL_BY_ID
     tpl = None
     if template_id and template_id in TPL_BY_ID:
         tpl = TPL_BY_ID[template_id]
     else:
-        m = _match(situation_text, TPL["records"], topk=1)
+        m = _match(situation_text, TPL["records"], topk=1, tiebreak=_TPL_PRIORITY)
         tpl = m[0] if m else None
     if not tpl:
         return _finalize(
@@ -311,8 +373,20 @@ def draft_response(situation_text: str, tone: str = "polite", channel: str = "",
             ["RES-1395"],
         )
     tones = tpl.get("tones", {})
-    draft = tones.get(tone) or tones.get("polite") or next(iter(tones.values()), "")
-    lines = [f"## ✍️ 응대 초안 — {tpl['situation_ko']} (톤: {tone})\n", f"> {draft}\n"]
+    if tone in tones:
+        used_tone, draft = tone, tones[tone]
+    elif "polite" in tones:
+        used_tone, draft = "polite", tones["polite"]
+    elif tones:
+        used_tone, draft = next(iter(tones.items()))
+    else:
+        used_tone, draft = tone, ""
+    lines = [f"## ✍️ 응대 초안 — {tpl['situation_ko']} (톤: {used_tone})\n"]
+    if bad_template_id:
+        lines.append("ℹ️ 지정한 template_id를 찾지 못해 상황에 맞춰 자동 선택했습니다.\n")
+    if used_tone != tone:
+        lines.append(f"ℹ️ '{tone}' 톤은 이 상황 템플릿에 없어 '{used_tone}' 톤으로 안내합니다.\n")
+    lines.append(f"> {draft}\n")
     if tpl.get("do_ko"):
         lines.append("**✅ DO**\n" + "\n".join(f"- {x}" for x in tpl["do_ko"]))
     if tpl.get("dont_ko"):
@@ -330,8 +404,9 @@ def get_support_resources(need: str = "all", situation_text: str = "") -> str:
 
     Args:
         need: "all"/"hotline"/"legal"/"counseling"/"insurance"/"complaint_team".
-        situation_text: 상황 서술(선택, 우선순위 정렬용).
+        situation_text: 상황 서술(선택, 참고용 — 현재 결과 정렬에는 영향 없음).
     """
+    need = (need or "all").strip().lower()  # 대소문자·공백 정규화
     typemap = {
         "hotline": ["RES-1395"],
         "insurance": ["RES-INSURANCE", "RES-1395"],
@@ -339,6 +414,7 @@ def get_support_resources(need: str = "all", situation_text: str = "") -> str:
         "legal": ["RES-UNION-LEGAL", "RES-1395"],
         "complaint_team": ["RES-COMPLAINT-TEAM", "RES-OFFICE-TEAM"],
     }
+    unknown_need = need != "all" and need not in typemap
     if need != "all" and need in typemap:
         recs = [RES_BY_ID[x] for x in typemap[need] if x in RES_BY_ID]
     else:
@@ -346,6 +422,11 @@ def get_support_resources(need: str = "all", situation_text: str = "") -> str:
     recs.sort(key=lambda r: 0 if r["id"] == "RES-1395" else 1)
 
     lines, refs = ["## 🤝 지원 기관·연락처 (참고)\n"], []
+    if unknown_need:
+        lines.append(
+            f"ℹ️ 알 수 없는 분류 '{need}' → 전체를 표시합니다. "
+            "(가능: hotline/legal/counseling/insurance/complaint_team/all)\n"
+        )
     for r in recs:
         lines.append(f"### {r['name_ko']}")
         lines.append(f"- 연락: **{r.get('contact','')}**")
@@ -375,8 +456,9 @@ def create_complaint_record(
 
     Args:
         incident_date: 발생 일시. summary: 사건 요약. channel: 발생 경로.
-        type_id: 침해유형 ID(선택, 유형·증거 자동 기입). reporter: 작성자(교원).
+        type_id: 침해유형 ID(선택, 유형·증거 자동 기입. 예: INF-CRIME-INSULT). reporter: 작성자(교원).
     """
+    type_id = (type_id or "").strip().upper()  # 대소문자·공백 정규화
     t = INFR_BY_ID.get(type_id)
     type_label = "____"
     if t:
@@ -405,6 +487,11 @@ def create_complaint_record(
             if e:
                 lines.append(f"- [ ] {e['name_ko']}")
         refs += t.get("legal_refs", [])
+    if type_id and not t:
+        lines.append(
+            f"\n⚠️ 입력한 유형 ID('{type_id}')를 찾지 못해 '추정 유형'을 비웠습니다. "
+            "`classify_complaint`로 유형(예: `INF-CRIME-INSULT`)을 확인하세요."
+        )
     lines.append(
         "\n### 작성 안내\n- 빈칸(____)은 사실관계대로 구체적으로 기재\n"
         "- 객관적 사실 위주, 추측·감정 표현은 분리해 기록"
