@@ -57,6 +57,7 @@ mcp = FastMCP(
         "판단·결론을 내리지 않습니다. 모든 응답에 출처와 검증 안내가 포함됩니다."
     ),
     stateless_http=True,
+    json_response=True,  # SSE(text/event-stream) 대신 순수 application/json 응답 — 단순 HTTP 클라이언트(PlayMCP 심사 등) 호환
     transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
 )
 
