@@ -61,8 +61,8 @@ SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 AUTH_ORDER = {"법률": 0, "시행령": 1, "행정규칙(고시)": 2, "매뉴얼(권고)": 3, "미확인": 4}
 # 응대 초안: 직접 침해행위 > 정황 > 시간·빈도 순으로 우선(동점 tie-break)
 _TPL_PRIORITY = {tid: i for i, tid in enumerate([
-    "TPL-ABUSE", "TPL-FALSE-REPORT-THREAT", "TPL-EXCESSIVE",
-    "TPL-MEETING", "TPL-AFTERHOURS", "TPL-REPEAT", "TPL-LEGITIMATE",
+    "TPL-ABUSE", "TPL-SEXUAL", "TPL-FALSE-REPORT-THREAT", "TPL-EXCESSIVE",
+    "TPL-DEFIANCE", "TPL-MEETING", "TPL-AFTERHOURS", "TPL-REPEAT", "TPL-LEGITIMATE",
 ])}
 
 # 신변 위협·위기 의심 표현 — _danger() 로 판정.
