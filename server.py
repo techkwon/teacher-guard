@@ -65,18 +65,44 @@ _TPL_PRIORITY = {tid: i for i, tid in enumerate([
     "TPL-MEETING", "TPL-AFTERHOURS", "TPL-REPEAT", "TPL-LEGITIMATE",
 ])}
 
-# 신변 위협·위기 의심 표현 — 감지 시 긴급도 critical + 112 안내 강제.
-# 주의: _norm()이 공백을 제거하므로 키워드는 "공백 없는 위협 종결형"으로 등록한다.
-# 단순 어간("죽이/칼/해치/자살")은 "죽이게 맛있다/칼국수/해치웠다/자살예방" 같은
-# 일상어를 오탐하고, 공백 포함("불 지르")은 정규화 후 "불을 지르겠다"를 놓치므로 금지.
-DANGER_KW = [
-    "죽이겠", "죽일거", "죽일것", "죽여버리",          # 살해 위협
-    "칼들", "칼부림", "흉기", "찌르겠", "휘두르",       # 흉기
-    "해치겠", "해칠", "해코지",                       # 가해
-    "찾아오겠", "찾아가겠", "쳐들어",                  # 침입·습격
-    "불지르", "불을지르", "불지른", "불을지른", "불질러", "불을질러", "불태우", "불붙이", "방화",  # 방화(공백·활용형 무관 표면형)
-    "폭파", "터뜨리", "터트리", "폭발물",               # 폭발물
-    "자해하겠", "자살하겠", "죽어버리겠",               # 자·타해 위기(종결형만 — '자살예방' 과탐 방지)
+# 신변 위협·위기 의심 표현 — 감지 시 긴급도 critical + 112 안내. _danger() 로 판정.
+# 설계: 위험 '어근'은 넓게 잡아 활용형(현재형/명령형/-려고/조사변형)까지 커버하고
+#       (미탐 방지 — 안전 도구에선 미탐이 과탐보다 위험), DANGER_SAFE의 명백한
+#       일상·비유·완수·교육 표현이 있으면 제외한다(과탐 방지).
+# 주의: _norm()이 공백을 지우므로 공백 포함 어근도 등록(예 "불 지르"→"불지르"와 동일).
+#       모호한 비유 어근(폭발/터뜨리/태워/죽는다·죽겠다)은 위협 결합형으로만 등록해
+#       "분노 폭발 / 풍선 터트리기 / 차 태워줘 / 배고파 죽겠다"를 회피한다.
+DANGER_STEM = [
+    # 살해 (타동사·복합·완곡 — 자동사 과장 '죽겠다/죽는다'는 구분불가로 의도적 제외)
+    "죽이", "죽여", "죽일", "죽인다", "패죽", "쳐죽", "때려죽", "죽여놓", "죽어버리",
+    "없애버리", "없애 버리", "묻어버리", "산채로", "산 채로", "쏴버리", "쏴 버리", "쏴죽",
+    "목따", "목을따", "목을 따",
+    # 흉기·자상 (넓게)
+    "칼", "흉기", "칼부림", "찌르", "찔러", "찔렀", "찌른", "휘두르", "휘둘러", "베어버리",
+    # 수단(위험물)
+    "총", "엽총", "권총", "염산", "황산", "휘발유",
+    # 가해·폭행
+    "해치", "해코지", "부러뜨리", "부러트리", "밀어버리", "밀어 버리",
+    # 침입·습격
+    "찾아오", "찾아가", "쳐들어",
+    # 방화 (결합형)
+    "불지르", "불지를", "불지른", "불질러", "불질렀", "불을지르", "불을지를", "불을지른", "불을질러",
+    "불태", "태워버리", "방화", "기름붓", "기름 붓", "기름뿌",
+    # 폭발 (위협 결합형만 — '분노 폭발' 비유 회피)
+    "폭파", "폭발물", "폭발시키", "터뜨려버", "터트려버", "터뜨리겠", "터트리겠", "사제폭",
+    # 중대 협박조
+    "가만안두", "가만 안 두", "가만두지않", "가만두지 않", "손봐주", "손 봐주", "혼쭐내",
+    # 자·타해 위기
+    "자해", "자살",
+]
+# 위험 어근이 있어도 위협이 아닌 일상·비유·완수·교육 표현 → danger 제외
+DANGER_SAFE = [
+    "칼국수", "칼슘", "칼로리", "면도칼", "연필칼", "맥가이버", "조각칼", "커터칼", "칼군무", "칼퇴",
+    "총무", "총장", "총합", "총회", "총정리", "총괄", "총책", "총동창", "총학생", "총선", "총리",
+    "총평", "총력", "총무과", "총각", "노총각",
+    "죽이게", "죽이는맛", "죽이는데", "죽여주", "죽여줘", "죽여줬", "끝내주",
+    "해치웠", "해치우",
+    "자살예방", "자해예방", "자살 예방", "자해 예방", "자살방지", "생명존중", "예방교육", "예방 교육",
 ]
 DANGER_BANNER = "🚨 **신변 위협이 의심됩니다 — 즉시 112 신고, 교권 상담은 1395.**\n"
 
@@ -137,6 +163,17 @@ def _rank_infr(cands: list) -> list:
     ))
 
 
+def _danger(text: str) -> bool:
+    """신변 위협·위기 의심 여부. 위험 어근(DANGER_STEM)을 넓게 매칭하되,
+    명백한 일상·비유·완수·교육 표현(DANGER_SAFE)이 있으면 제외해 과탐을 막는다."""
+    if not text:
+        return False
+    t = _norm(text)
+    if any(_norm(s) in t for s in DANGER_SAFE):
+        return False
+    return any(_norm(s) in t for s in DANGER_STEM)
+
+
 def _sources_block(ref_ids) -> str:
     lines, seen = [], set()
     for rid in ref_ids:
@@ -185,7 +222,7 @@ def classify_complaint(situation_text: str, repeated: bool = False, channel: str
         repeated: 반복성 여부(부당간섭 가중).
         channel: 발생 경로(phone/message/inperson/sns 등, 선택).
     """
-    danger = any(_norm(k) in _norm(situation_text) for k in DANGER_KW)
+    danger = _danger(situation_text)
     cands = _match(situation_text, INFR["records"], topk=3)
     if repeated:
         rep = INFR_BY_ID.get("INF-INTERFERE-REPEAT")
@@ -316,7 +353,7 @@ def get_response_procedure(track_id: str = "", situation_text: str = "", include
         situation_text: 상황 서술(track_id 없을 때 내부 분류).
         include_evidence: 증거수집 가이드 포함 여부.
     """
-    danger = bool(situation_text) and any(_norm(k) in _norm(situation_text) for k in DANGER_KW)
+    danger = _danger(situation_text)
     track = None
     if track_id and track_id in PROC_BY_ID:
         track = PROC_BY_ID[track_id]
